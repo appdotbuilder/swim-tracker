@@ -1,7 +1,18 @@
+import { db } from '../db';
+import { swimmingPracticesTable } from '../db/schema';
+import { eq } from 'drizzle-orm';
+
 export async function deleteSwimmingPractice(id: number): Promise<boolean> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is deleting a swimming practice record from the database by its ID.
-    // It should return true if the deletion was successful, false if the record was not found.
-    // This allows users to remove practice records they no longer want to keep.
-    return Promise.resolve(false);
+  try {
+    // Delete the swimming practice record by ID
+    const result = await db.delete(swimmingPracticesTable)
+      .where(eq(swimmingPracticesTable.id, id))
+      .execute();
+
+    // Return true if a record was deleted, false if no record was found
+    return (result.rowCount ?? 0) > 0;
+  } catch (error) {
+    console.error('Swimming practice deletion failed:', error);
+    throw error;
+  }
 }

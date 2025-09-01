@@ -1,16 +1,29 @@
+import { db } from '../db';
+import { swimmingPracticesTable } from '../db/schema';
 import { type CreateSwimmingPracticeInput, type SwimmingPractice } from '../schema';
 
 export async function createSwimmingPractice(input: CreateSwimmingPracticeInput): Promise<SwimmingPractice> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new swimming practice record and persisting it in the database.
-    // It should validate the input, insert the record into the swimming_practices table, and return the created record.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
-        date: input.date,
+  try {
+    // Insert swimming practice record
+    const result = await db.insert(swimmingPracticesTable)
+      .values({
+        date: input.date.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string format
         duration_minutes: input.duration_minutes,
-        total_distance: input.total_distance,
+        total_distance: input.total_distance, // real column - no conversion needed
         main_stroke: input.main_stroke,
-        notes: input.notes,
-        created_at: new Date() // Placeholder timestamp
-    } as SwimmingPractice);
+        notes: input.notes
+      })
+      .returning()
+      .execute();
+
+    // Return the created swimming practice record
+    const practice = result[0];
+    return {
+      ...practice,
+      date: new Date(practice.date), // Convert string back to Date object for consistency with schema
+    };
+  } catch (error) {
+    console.error('Swimming practice creation failed:', error);
+    throw error;
+  }
 }
